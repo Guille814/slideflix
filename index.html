@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoviePicker Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="/src/main.js"></script>
+  <link rel="stylesheet" href="./src/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            dark: '#1E293B',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Estilos personalizados */
+    select[multiple] {
+      height: auto;
+      min-height: 42px;
+    }
+
+    select[multiple] option {
+      padding: 8px 12px;
+    }
+
+    select[multiple] option:checked {
+      background-color: #3B82F6;
+      color: white;
+    }
+
+    .media-card {
+      transition: all 0.3s ease;
+    }
+
+    .media-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-primary dark:bg-gray-800 text-white p-4 shadow-lg">
+      <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold flex items-center gap-2">
+          <i class="bi bi-film"></i> MoviePicker Pro
+        </h1>
+        <div class="flex items-center gap-4">
+          <button id="start-questions" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+            <i class="bi bi-question-circle"></i> Recomendación Personalizada
+          </button>
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10">
+            <i class="bi bi-moon-fill hidden dark:block"></i>
+            <i class="bi bi-sun-fill dark:hidden"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sección de Preguntas (oculta inicialmente) -->
+    <div id="questions-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-6 mx-4">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white">Cuéntanos tus preferencias</h2>
+      <div id="questions-container" class="space-y-4"></div>
+      <button id="get-recommendation"
+        class="mt-6 bg-primary hover:bg-primary/90 text-white p-3 rounded-lg transition w-full text-lg font-medium">
+        🎯 Generar Recomendación
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4">
+      <!-- Filtros Modernos -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 dark:text-white">Filtros Avanzados</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Selector de Tipo -->
+          <div>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-300">Tipo</label>
+            <select id="media-type" multiple
+              class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+              <option value="movie" selected>🎬 Películas</option>
+              <option value="tv" selected>📺 Series</option>
+            </select>
+          </div>
+
+          <!-- Selector de Género -->
+          <div>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-300">Género</label>
+            <select id="genre" multiple
+              class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+              <option value="">Cargando géneros...</option>
+            </select>
+          </div>
+
+          <!-- Año -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1 dark:text-gray-300">Desde</label>
+              <select id="year-from"
+                class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                <option value="">Cualquiera</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1 dark:text-gray-300">Hasta</label>
+              <select id="year-to"
+                class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                <option value="">Cualquiera</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Botón Aplicar -->
+          <div class="flex items-end">
+            <button id="apply-filters"
+              class="w-full bg-primary hover:bg-primary/90 text-white p-2 rounded-lg transition">
+              Aplicar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Media -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md mb-6 media-card">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Poster -->
+          <div class="w-full md:w-1/3">
+            <img id="media-poster" class="w-full h-auto rounded-lg shadow-lg" src="https://via.placeholder.com/300x450"
+              alt="Poster">
+            <button id="show-trailer"
+              class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg flex items-center justify-center gap-2">
+              <i class="bi bi-play-fill"></i> Ver Tráiler
+            </button>
+          </div>
+
+          <!-- Detalles -->
+          <div class="w-full md:w-2/3">
+            <h2 id="media-title" class="text-2xl font-bold mb-2 dark:text-white">Título</h2>
+            <div class="flex items-center gap-2 mb-4">
+              <span id="media-rating"
+                class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded dark:bg-yellow-900 dark:text-yellow-200">⭐
+                0.0</span>
+              <span id="media-year"
+                class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded dark:bg-blue-900 dark:text-blue-200">📅
+                2023</span>
+            </div>
+            <p id="media-overview" class="text-gray-700 dark:text-gray-300 mb-6">Sinopsis...</p>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-wrap gap-3">
+              <button id="dislike-btn"
+                class="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg transition">
+                <i class="bi bi-hand-thumbs-down"></i> No me gusta
+              </button>
+              <button id="neutral-btn"
+                class="flex-1 flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-lg transition">
+                <i class="bi bi-clock"></i> Ver después
+              </button>
+              <button id="like-btn"
+                class="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg transition">
+                <i class="bi bi-hand-thumbs-up"></i> Me gusta
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones Especiales -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <button id="random-btn"
+          class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow-lg transition flex items-center justify-center gap-2">
+          <i class="bi bi-shuffle"></i> Sorpréndeme
+        </button>
+        <button id="random-favorite"
+          class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition flex items-center justify-center gap-2">
+          <i class="bi bi-star-fill"></i> Random Favoritos
+        </button>
+        <button id="random-unseen"
+          class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg shadow-lg transition flex items-center justify-center gap-2">
+          <i class="bi bi-clock-history"></i> Random Por Ver
+        </button>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-4 text-center">
+      <p>© 2024 MoviePicker Pro | Hecho con ❤️</p>
+    </footer>
+  </div>
+
+  <!-- Modal de Tráiler -->
+  <div id="trailer-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl relative">
+      <button id="close-trailer" class="absolute -top-10 right-0 text-white text-2xl">&times;</button>
+      <div class="aspect-w-16 aspect-h-9">
+        <iframe id="trailer-iframe" class="w-full h-96 rounded-t-lg" src="" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+      <div class="p-4 dark:text-white">
+        <h3 id="trailer-title" class="text-xl font-bold"></h3>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
